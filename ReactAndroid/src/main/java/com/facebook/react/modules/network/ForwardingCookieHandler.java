@@ -126,8 +126,8 @@ public class ForwardingCookieHandler extends CookieHandler {
   }
 
   /**
-   * Instantiating CookieManager will load the Chromium task taking a 100ish ms so we do it lazily
-   * to make sure it's done on a background thread as needed.
+   * Instantiating CookieManager in KitKat+ will load the Chromium task taking a 100ish ms so we do
+   * it lazily to make sure it's done on a background thread as needed.
    */
   private @Nullable CookieManager getCookieManager() {
     if (mCookieManager == null) {
@@ -142,9 +142,11 @@ public class ForwardingCookieHandler extends CookieHandler {
         // We cannot catch MissingWebViewPackageException as it is in a private / system API
         // class. This validates the exception's message to ensure we are only handling this
         // specific exception.
+        // The exception class doesn't always contain the correct name as it depends on the OEM
+        // and OS version. It is better to check the message for clues regarding the exception
+        // as that is somewhat consistent across OEMs.
         // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/webkit/WebViewFactory.java#348
-        if (message != null
-            && exception.getClass().getCanonicalName().contains("MissingWebViewPackageException")) {
+        if (message!=null && message.contains("WebView")) {
           return null;
         } else {
           throw exception;
