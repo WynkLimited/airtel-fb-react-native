@@ -71,7 +71,7 @@ public class ReactInstanceManagerBuilder {
 
   /* package protected */ ReactInstanceManagerBuilder() {}
 
-  /* package protected */ ReactInstanceManagerBuilder(Boolean hermesEnabled) {this.enableHermes = true;}
+  /* package protected */ ReactInstanceManagerBuilder(Boolean hermesEnabled) {this.enableHermes = hermesEnabled;}
 
   /** Sets a provider of {@link UIImplementation}. Uses default provider if null is passed. */
   public ReactInstanceManagerBuilder setUIImplementationProvider(
