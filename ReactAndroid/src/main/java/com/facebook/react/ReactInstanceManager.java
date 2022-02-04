@@ -211,6 +211,12 @@ public class ReactInstanceManager {
     return new ReactInstanceManagerBuilder();
   }
 
+  /** Creates a builder that is capable of creating an instance of {@link ReactInstanceManager}. 
+      with check for hermes and jsc */
+  public static ReactInstanceManagerBuilder builder(Boolean hermesEnabled) {
+    return new ReactInstanceManagerBuilder(hermesEnabled);
+  }
+
   /* package */ ReactInstanceManager(
       Context applicationContext,
       @Nullable Activity currentActivity,

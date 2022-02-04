@@ -67,8 +67,11 @@ public class ReactInstanceManagerBuilder {
   private @Nullable Map<String, RequestHandler> mCustomPackagerCommandHandlers;
   private @Nullable ReactPackageTurboModuleManagerDelegate.Builder mTMMDelegateBuilder;
   private @Nullable SurfaceDelegateFactory mSurfaceDelegateFactory;
+  private Boolean enableHermes = false;
 
   /* package protected */ ReactInstanceManagerBuilder() {}
+
+  /* package protected */ ReactInstanceManagerBuilder(Boolean hermesEnabled) {this.enableHermes = true;}
 
   /** Sets a provider of {@link UIImplementation}. Uses default provider if null is passed. */
   public ReactInstanceManagerBuilder setUIImplementationProvider(
@@ -349,17 +352,23 @@ public class ReactInstanceManagerBuilder {
     try {
       // If JSC is included, use it as normal
       initializeSoLoaderIfNecessary(applicationContext);
-      HermesExecutor.loadLibrary();
-      return new HermesExecutorFactory();
-    } catch (UnsatisfiedLinkError hermesE) {
+      if(enableHermes){
+        HermesExecutor.loadLibrary();
+        return new HermesExecutorFactory();
+      }
+      else{
+        JSCExecutor.loadLibrary();
+        return new JSCExecutorFactory();
+      }
+    } catch (UnsatisfiedLinkError e) {
       // Hermes failed (since it's not in the APK), or it's a Hermes
       // build, and Hermes had a problem.
       // We suspect this is a JSC issue (it's the default), so we
       // will throw that exception, but we will print hermesE first,
       // since it could be a Hermes issue and we don't want to
       // swallow that.
-      hermesE.printStackTrace();
-      throw hermesE;
+      e.printStackTrace();
+      throw e;
     }
   }
 }
