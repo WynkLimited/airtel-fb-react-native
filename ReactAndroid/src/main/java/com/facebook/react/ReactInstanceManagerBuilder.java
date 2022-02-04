@@ -358,7 +358,7 @@ public class ReactInstanceManagerBuilder {
       }
       else{
         JSCExecutor.loadLibrary();
-        return new JSCExecutorFactory();
+        return new JSCExecutorFactory(appName, deviceName);
       }
     } catch (UnsatisfiedLinkError e) {
       // Hermes failed (since it's not in the APK), or it's a Hermes
