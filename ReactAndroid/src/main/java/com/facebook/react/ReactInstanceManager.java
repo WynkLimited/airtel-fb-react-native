@@ -206,7 +206,8 @@ public class ReactInstanceManager {
     }
   }
 
-  /** Creates a builder that is capable of creating an instance of {@link ReactInstanceManager}. */
+  /** Creates a builder that is capable of creating an instance of {@link ReactInstanceManager}. 
+      Uses Hermes as the default js engine (enableHeremes = true) */
   public static ReactInstanceManagerBuilder builder() {
     return new ReactInstanceManagerBuilder();
   }

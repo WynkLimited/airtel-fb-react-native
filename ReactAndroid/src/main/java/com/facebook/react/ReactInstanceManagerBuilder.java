@@ -67,11 +67,13 @@ public class ReactInstanceManagerBuilder {
   private @Nullable Map<String, RequestHandler> mCustomPackagerCommandHandlers;
   private @Nullable ReactPackageTurboModuleManagerDelegate.Builder mTMMDelegateBuilder;
   private @Nullable SurfaceDelegateFactory mSurfaceDelegateFactory;
-  private Boolean enableHermes = false;
+  private Boolean enableHermes = true; // defaulting to hermes being enabled in the app
 
-  /* package protected */ ReactInstanceManagerBuilder() {}
+  /* package protected (will use hermes as default js engine) */ 
+  ReactInstanceManagerBuilder() {}
 
-  /* package protected */ ReactInstanceManagerBuilder(Boolean hermesEnabled) {this.enableHermes = hermesEnabled;}
+  /* package protected (can switch between hermes {hermesEnabled: true} and jsc {hermesEnabled: false}) */ 
+  ReactInstanceManagerBuilder(Boolean hermesEnabled) {this.enableHermes = hermesEnabled;}
 
   /** Sets a provider of {@link UIImplementation}. Uses default provider if null is passed. */
   public ReactInstanceManagerBuilder setUIImplementationProvider(
