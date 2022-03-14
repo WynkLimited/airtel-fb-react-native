@@ -14,7 +14,6 @@ import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.ColorPropConverter;
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.DynamicFromObject;
-import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -32,6 +31,8 @@ import java.util.Map;
 
   private static final Map<Class, Map<String, PropSetter>> CLASS_PROPS_CACHE = new HashMap<>();
   private static final Map<String, PropSetter> EMPTY_PROPS_MAP = new HashMap<>();
+  private Class logger, breadcrumbLogger;
+  private Method logException, logBreadCrumb;
 
   public static void clear() {
     CLASS_PROPS_CACHE.clear();
@@ -59,6 +60,7 @@ import java.util.Map;
           ReactProp.USE_DEFAULT_TYPE.equals(prop.customType()) ? defaultType : prop.customType();
       mSetter = setter;
       mIndex = null;
+      setUpAirtelLogger()
     }
 
     private PropSetter(ReactPropGroup prop, String defaultType, Method setter, int index) {
@@ -69,6 +71,37 @@ import java.util.Map;
               : prop.customType();
       mSetter = setter;
       mIndex = index;
+      setUpAirtelLogger()
+    }
+
+    /**
+     * Setting up airtel bugsnagLogger via reflection
+     */
+    private setUpAirtelLogger(){
+      try {
+        logger = Class.forName("com.myairtelapp.logging.BugsnagLoggingUtils")
+        logException = logger.getDeclaredMethod("logException", Exception.class)
+        breadcrumbLogger = Class.forName("com.myairtelapp.logging.BreadcrumbLoggingUtils")
+        logBreadcrumb = breadCrumbLogger.getDeclaredMethod("logBugsnagBreadcrumb", String.class, String.class)
+      }
+      catch (e:Exception){}
+    }
+
+    /**
+     * Utility method to log exceptions to bugsnag
+     */
+
+    private logExceptionToAirtel(){
+      try {
+        String message =
+          "Error while updating property '"
+            + mPropName
+            + "' in shadow node of type: "
+            + nodeToUpdate.getViewClass()
+        logException.invoke(logger.newInstance(), new JSApplicationIllegalArgumentException(message, t))
+        logBreadCrumb(breadcrumbLogger.newInsance(), "ViewManagersPropertyCache", message)
+      }
+      catch (e : Exception){}
     }
 
     public String getPropName() {
@@ -95,12 +128,7 @@ import java.util.Map;
         }
       } catch (Throwable t) {
         FLog.e(ViewManager.class, "Error while updating prop " + mPropName, t);
-        throw new JSApplicationIllegalArgumentException(
-            "Error while updating property '"
-                + mPropName
-                + "' of a view managed by: "
-                + viewManager.getName(),
-            t);
+        logExceptionToAirtel()
       }
     }
 
@@ -118,12 +146,7 @@ import java.util.Map;
         }
       } catch (Throwable t) {
         FLog.e(ViewManager.class, "Error while updating prop " + mPropName, t);
-        throw new JSApplicationIllegalArgumentException(
-            "Error while updating property '"
-                + mPropName
-                + "' in shadow node of type: "
-                + nodeToUpdate.getViewClass(),
-            t);
+        logExceptionToAirtel()
       }
     }
 
