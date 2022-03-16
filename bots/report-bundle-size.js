@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -9,21 +9,20 @@
 
 'use strict';
 
-const {
-  GITHUB_TOKEN,
-  GITHUB_OWNER,
-  GITHUB_REPO,
-  GITHUB_PR_NUMBER,
-  GITHUB_REF,
-  GITHUB_SHA,
-} = process.env;
+const {GITHUB_REF, GITHUB_SHA} = process.env;
+if (!GITHUB_REF || !GITHUB_SHA) {
+  if (!GITHUB_REF) {
+    console.error("Missing GITHUB_REF. This should've been set by the CI.");
+  }
+  if (!GITHUB_SHA) {
+    console.error("Missing GITHUB_SHA. This should've been set by the CI.");
+  }
+  process.exit(1);
+}
 
 const fs = require('fs');
 const datastore = require('./datastore');
-const {
-  createOrUpdateComment,
-  validateEnvironment: validateEnvironmentForMakeComment,
-} = require('./make-comment');
+const {createOrUpdateComment} = require('./make-comment');
 
 /**
  * Generates and submits a comment. If this is run on the main or release branch, data is
@@ -48,7 +47,7 @@ async function reportSizeStats(stats, replacePattern) {
   );
   const collection = datastore.getBinarySizesCollection(store);
 
-  if (!isPullRequest(GITHUB_REF)) {
+  if (GITHUB_REF === 'main' || GITHUB_REF.endsWith('-stable')) {
     // Ensure we only store numbers greater than zero.
     const validatedStats = Object.keys(stats).reduce((validated, key) => {
       const value = stats[key];
@@ -75,18 +74,11 @@ async function reportSizeStats(stats, replacePattern) {
       );
     }
   } else {
-    const params = {
-      auth: GITHUB_TOKEN,
-      owner: GITHUB_OWNER,
-      repo: GITHUB_REPO,
-      issue_number: GITHUB_PR_NUMBER,
-    };
-
     // For PRs, always compare vs main.
     const document =
       (await datastore.getLatestDocument(collection, 'main')) || {};
     const comment = formatBundleStats(document, stats);
-    createOrUpdateComment(params, comment, replacePattern);
+    createOrUpdateComment(comment, replacePattern);
   }
 
   await datastore.terminateStore(store);
@@ -171,38 +163,6 @@ function android_getApkSize(engine, arch) {
 }
 
 /**
- * Returns whether the specified ref points to a pull request.
- */
-function isPullRequest(ref) {
-  return ref !== 'main' && !/^\d+\.\d+-stable$/.test(ref);
-}
-
-/**
- * Validates that required environment variables are set.
- * @returns {boolean} `true` if everything is in order; `false` otherwise.
- */
-function validateEnvironment() {
-  if (!GITHUB_REF) {
-    console.error("Missing GITHUB_REF. This should've been set by the CI.");
-    return false;
-  }
-
-  if (isPullRequest(GITHUB_REF)) {
-    if (!validateEnvironmentForMakeComment()) {
-      return false;
-    }
-  } else if (!GITHUB_SHA) {
-    // To update the data store, we need the SHA associated with the build
-    console.error("Missing GITHUB_SHA. This should've been set by the CI.");
-    return false;
-  }
-
-  console.log(`  GITHUB_SHA=${GITHUB_SHA}`);
-
-  return true;
-}
-
-/**
  * Reports app bundle size.
  * @param {string} target
  */
@@ -245,10 +205,6 @@ async function report(target) {
       break;
     }
   }
-}
-
-if (!validateEnvironment()) {
-  process.exit(1);
 }
 
 const {[2]: target} = process.argv;

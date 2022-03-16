@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -13,6 +13,7 @@
 /**
  * This script walks a releaser through bumping the version for a release
  * It will commit the appropriate tags to trigger the CircleCI jobs.
+ * TODO change this workflow to use POST a trigger vs. using tags
  */
 const {exec, exit} = require('shelljs');
 const yargs = require('yargs');

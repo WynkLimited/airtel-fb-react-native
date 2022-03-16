@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -58,8 +58,9 @@ describe('version-utils', () => {
     });
 
     it('should parse pre-release version with .', () => {
-      const {version, major, minor, patch, prerelease} =
-        parseVersion('0.66.0-rc.4');
+      const {version, major, minor, patch, prerelease} = parseVersion(
+        '0.66.0-rc.4',
+      );
       expect(version).toBe('0.66.0-rc.4');
       expect(major).toBe('0');
       expect(minor).toBe('66');
@@ -68,8 +69,9 @@ describe('version-utils', () => {
     });
 
     it('should parse pre-release version with -', () => {
-      const {version, major, minor, patch, prerelease} =
-        parseVersion('0.66.0-rc-4');
+      const {version, major, minor, patch, prerelease} = parseVersion(
+        '0.66.0-rc-4',
+      );
       expect(version).toBe('0.66.0-rc-4');
       expect(major).toBe('0');
       expect(minor).toBe('66');
@@ -86,8 +88,9 @@ describe('version-utils', () => {
       expect(prerelease).toBeUndefined();
     });
     it('should parse pre-release version from tag', () => {
-      const {version, major, minor, patch, prerelease} =
-        parseVersion('v0.66.1-rc.4');
+      const {version, major, minor, patch, prerelease} = parseVersion(
+        'v0.66.1-rc.4',
+      );
       expect(version).toBe('0.66.1-rc.4');
       expect(major).toBe('0');
       expect(minor).toBe('66');
@@ -96,8 +99,9 @@ describe('version-utils', () => {
     });
 
     it('should parse stable version from tag', () => {
-      const {version, major, minor, patch, prerelease} =
-        parseVersion('v0.66.0');
+      const {version, major, minor, patch, prerelease} = parseVersion(
+        'v0.66.0',
+      );
       expect(version).toBe('0.66.0');
       expect(major).toBe('0');
       expect(minor).toBe('66');
@@ -115,8 +119,9 @@ describe('version-utils', () => {
     });
 
     it('should parse dryrun fake version', () => {
-      const {version, major, minor, patch, prerelease} =
-        parseVersion('1000.0.0');
+      const {version, major, minor, patch, prerelease} = parseVersion(
+        '1000.0.0',
+      );
       expect(version).toBe('1000.0.0');
       expect(major).toBe('1000');
       expect(minor).toBe('0');
