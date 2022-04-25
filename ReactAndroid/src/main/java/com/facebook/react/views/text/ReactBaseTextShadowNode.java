@@ -18,7 +18,7 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import androidx.annotation.Nullable;
 
-import com.airtel.logger.AirtelLogger;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;

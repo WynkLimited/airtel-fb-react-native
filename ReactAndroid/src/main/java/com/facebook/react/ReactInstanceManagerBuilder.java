@@ -18,7 +18,7 @@ import android.os.Build;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.airtel.logger.AirtelLogger;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.hermes.reactexecutor.HermesExecutorFactory;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
@@ -34,9 +34,7 @@ import com.facebook.react.devsupport.interfaces.DevSupportManager;
 import com.facebook.react.jscexecutor.JSCExecutorFactory;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.packagerconnection.RequestHandler;
-import com.facebook.react.uimanager.ReactShadowNode;
 import com.facebook.react.uimanager.UIImplementationProvider;
-import com.facebook.react.uimanager.ViewManager;
 import com.facebook.soloader.SoLoader;
 
 import java.lang.reflect.InvocationTargetException;
