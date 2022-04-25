@@ -1,8 +1,11 @@
 package com.airtel.logger;
 
+import androidx.annotation.Keep;
+
 import java.lang.reflect.Method;
 import java.lang.Class;
 
+@Keep
 public class AirtelLogger {
   public static Class logger, breadcrumbLogger;
   public static Method logException, logBreadCrumb;
