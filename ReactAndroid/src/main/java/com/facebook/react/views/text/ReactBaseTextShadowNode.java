@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.airtel.AirtelLogger;
 
 /**
  * {@link ReactShadowNode} abstract class for spannable text nodes.
@@ -110,6 +111,17 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
 
     for (int i = 0, length = textShadowNode.getChildCount(); i < length; i++) {
       ReactShadowNode child = textShadowNode.getChildAt(i);
+
+      if (child == null || ((ReactRawTextShadowNode) child).getText() == null){
+        /**
+         * Logging exception to bugsnag before preventing it
+         */
+        String message = "Attempt to invoke interface method 'int java.lang.CharSequence.length()' on a null object reference"
+        AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new java.lang.NullPointerException(message));
+        AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message
+        + "\n ReactShadowNode child has null text");
+        continue;
+      }
 
       if (child instanceof ReactRawTextShadowNode) {
         sb.append(
