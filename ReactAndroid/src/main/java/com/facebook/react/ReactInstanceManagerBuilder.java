@@ -13,11 +13,15 @@ import static com.facebook.react.modules.systeminfo.AndroidInfoHelpers.getFriend
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
+
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.airtel.logger.AirtelLogger;
 import com.facebook.hermes.reactexecutor.HermesExecutorFactory;
 import com.facebook.infer.annotation.Assertions;
+import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.JSBundleLoader;
 import com.facebook.react.bridge.JSIModulePackage;
 import com.facebook.react.bridge.JavaScriptExecutorFactory;
@@ -30,8 +34,12 @@ import com.facebook.react.devsupport.interfaces.DevSupportManager;
 import com.facebook.react.jscexecutor.JSCExecutorFactory;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.packagerconnection.RequestHandler;
+import com.facebook.react.uimanager.ReactShadowNode;
 import com.facebook.react.uimanager.UIImplementationProvider;
+import com.facebook.react.uimanager.ViewManager;
 import com.facebook.soloader.SoLoader;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -292,10 +300,57 @@ public class ReactInstanceManagerBuilder {
         mCustomPackagerCommandHandlers);
   }
 
+  private void logNodeExceptionToAirtel(){
+    try {
+      String message =
+        "Error while updating property '"
+          + "prop"
+          + "' in shadow node of type: "
+          + "nodeToUpdate.getViewClass()";
+      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new JSApplicationIllegalArgumentException(message));
+      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
+    }
+    catch (java.lang.Exception e){}
+  }
+
+  private void logViewExceptionToAirtel(){
+    try {
+      String message =
+        "Error while updating property '"
+          + "prop"
+          + "' of a view managed by: "
+          + "viewManager";
+      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new JSApplicationIllegalArgumentException(message));
+      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
+    }
+    catch (java.lang.Exception e){}
+  }
+
+  @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+  private void logException() {
+    /**
+     * Logging exception to bugsnag before preventing it
+     */
+    String message = "Attempt to invoke interface method 'int java.lang.CharSequence.length()' on a null object reference";
+    try {
+      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new java.lang.NullPointerException(message));
+      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message
+        + "\n ReactShadowNode child has null text");
+    } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+    }
+
+  }
+
+
   private JavaScriptExecutorFactory getDefaultJSExecutorFactory(
       String appName, String deviceName, Context applicationContext) {
     try {
       // If JSC is included, use it as normal
+      logNodeExceptionToAirtel();
+      logViewExceptionToAirtel();
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        logException();
+      }
       initializeSoLoaderIfNecessary(applicationContext);
       SoLoader.loadLibrary("jscexecutor");
       return new JSCExecutorFactory(appName, deviceName);
