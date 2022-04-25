@@ -17,6 +17,8 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.view.Gravity;
 import androidx.annotation.Nullable;
+
+import com.airtel.logger.AirtelLogger;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
@@ -31,11 +33,12 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.yoga.YogaDirection;
 import com.facebook.yoga.YogaUnit;
 import com.facebook.yoga.YogaValue;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.airtel.AirtelLogger;
 
 /**
  * {@link ReactShadowNode} abstract class for spannable text nodes.
@@ -113,13 +116,7 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
       ReactShadowNode child = textShadowNode.getChildAt(i);
 
       if (child == null || ((ReactRawTextShadowNode) child).getText() == null){
-        /**
-         * Logging exception to bugsnag before preventing it
-         */
-        String message = "Attempt to invoke interface method 'int java.lang.CharSequence.length()' on a null object reference"
-        AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new java.lang.NullPointerException(message));
-        AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message
-        + "\n ReactShadowNode child has null text");
+        logException();
         continue;
       }
 
@@ -649,5 +646,19 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
       mMinimumFontScale = minimumFontScale;
       markUpdated();
     }
+  }
+
+  private static void logException() {
+    /**
+     * Logging exception to bugsnag before preventing it
+     */
+    String message = "Attempt to invoke interface method 'int java.lang.CharSequence.length()' on a null object reference";
+    try {
+      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new java.lang.NullPointerException(message));
+      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message
+        + "\n ReactShadowNode child has null text");
+    } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+    }
+
   }
 }

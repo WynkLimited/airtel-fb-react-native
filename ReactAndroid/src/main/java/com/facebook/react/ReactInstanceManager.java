@@ -109,7 +109,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import com.airtel.AirtelLogger;
 
 /**
  * This class is managing instances of {@link CatalystInstance}. It exposes a way to configure

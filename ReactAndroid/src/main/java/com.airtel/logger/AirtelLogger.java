@@ -1,11 +1,11 @@
-package com.airtel.logger
+package com.airtel.logger;
 
 import java.lang.reflect.Method;
 import java.lang.Class;
 
 public class AirtelLogger {
   public static Class logger, breadcrumbLogger;
-  private static Method logException, logBreadCrumb;
+  public static Method logException, logBreadCrumb;
 
   public static void setUpAirtelLogger() {
     try {

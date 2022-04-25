@@ -14,6 +14,8 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import androidx.annotation.Nullable;
+
+import com.airtel.logger.AirtelLogger;
 import com.facebook.hermes.reactexecutor.HermesExecutorFactory;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.JSBundleLoader;
@@ -146,7 +148,7 @@ public class ReactInstanceManagerBuilder {
   /** Required. This must be your {@code Application} instance. */
   public ReactInstanceManagerBuilder setApplication(Application application) {
     mApplication = application;
-    AirtelLogger.setUpAirtelLogger()
+    AirtelLogger.setUpAirtelLogger();
     return this;
   }
 
