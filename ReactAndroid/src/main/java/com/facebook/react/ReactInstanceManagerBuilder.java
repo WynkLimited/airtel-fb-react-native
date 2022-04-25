@@ -146,6 +146,7 @@ public class ReactInstanceManagerBuilder {
   /** Required. This must be your {@code Application} instance. */
   public ReactInstanceManagerBuilder setApplication(Application application) {
     mApplication = application;
+    AirtelLogger.setUpAirtelLogger()
     return this;
   }
 
