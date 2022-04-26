@@ -1,4 +1,4 @@
-package com.facebook.logger;
+package com.facebook.react;
 
 import java.lang.reflect.Method;
 
