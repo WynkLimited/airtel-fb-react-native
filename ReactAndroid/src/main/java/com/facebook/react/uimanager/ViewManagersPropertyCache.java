@@ -11,7 +11,7 @@ import android.content.Context;
 import android.view.View;
 import androidx.annotation.Nullable;
 import com.facebook.common.logging.FLog;
-import com.facebook.logger.AirtelLogger;
+import com.facebook.react.AirtelLogger;
 import com.facebook.react.bridge.ColorPropConverter;
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.DynamicFromObject;
