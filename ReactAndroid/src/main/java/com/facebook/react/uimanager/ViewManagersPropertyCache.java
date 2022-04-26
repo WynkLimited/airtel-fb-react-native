@@ -61,7 +61,6 @@ import java.lang.Class;
           ReactProp.USE_DEFAULT_TYPE.equals(prop.customType()) ? defaultType : prop.customType();
       mSetter = setter;
       mIndex = null;
-      AirtelLogger.setupAirtelLogger();
     }
 
     private PropSetter(ReactPropGroup prop, String defaultType, Method setter, int index) {
@@ -72,7 +71,6 @@ import java.lang.Class;
               : prop.customType();
       mSetter = setter;
       mIndex = index;
-      AirtelLogger.setupAirtelLogger();
     }
 
     /**
@@ -86,8 +84,8 @@ import java.lang.Class;
             + mPropName
             + "' in shadow node of type: "
             + nodeToUpdate.getViewClass();
-        AirtelLogger.logException.invoke(AirtelLogger.errorLogger.newInstance(), new JSApplicationIllegalArgumentException(message, t));
-        AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
+        AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), new JSApplicationIllegalArgumentException(message, t));
+        AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ViewManagersPropertyCache", message);
       }
       catch (java.lang.Exception e){}
     }
@@ -99,8 +97,8 @@ import java.lang.Class;
             + mPropName
             + "' of a view managed by: "
             + viewManager.getName();
-        AirtelLogger.logException.invoke(AirtelLogger.errorLogger.newInstance(), new JSApplicationIllegalArgumentException(message, t));
-        AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
+        AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), new JSApplicationIllegalArgumentException(message, t));
+        AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ViewManagersPropertyCache", message);
       }
       catch (java.lang.Exception e){}
     }
