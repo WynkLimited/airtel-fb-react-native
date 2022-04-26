@@ -11,6 +11,7 @@ import android.content.Context;
 import android.view.View;
 import androidx.annotation.Nullable;
 import com.facebook.common.logging.FLog;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.ColorPropConverter;
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.DynamicFromObject;
@@ -23,7 +24,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.lang.reflect.Method;
 import java.lang.Class;
 
 /**
@@ -34,8 +34,6 @@ import java.lang.Class;
 
   private static final Map<Class, Map<String, PropSetter>> CLASS_PROPS_CACHE = new HashMap<>();
   private static final Map<String, PropSetter> EMPTY_PROPS_MAP = new HashMap<>();
-  private static Class logger, breadcrumbLogger;
-  private static Method logException, logBreadCrumb;
 
   public static void clear() {
     CLASS_PROPS_CACHE.clear();
@@ -63,7 +61,6 @@ import java.lang.Class;
           ReactProp.USE_DEFAULT_TYPE.equals(prop.customType()) ? defaultType : prop.customType();
       mSetter = setter;
       mIndex = null;
-      setUpAirtelLogger();
     }
 
     private PropSetter(ReactPropGroup prop, String defaultType, Method setter, int index) {
@@ -74,22 +71,6 @@ import java.lang.Class;
               : prop.customType();
       mSetter = setter;
       mIndex = index;
-      setUpAirtelLogger();
-    }
-
-    /**
-     * Setting up airtel bugsnagLogger via reflection
-     */
-    private void setUpAirtelLogger(){
-      try {
-        logger = Class.forName("com.myairtelapp.logging.BugsnagLoggingUtils");
-        logException = logger.getDeclaredMethod("logException", Exception.class);
-        logException.setAccessible(true);
-        breadcrumbLogger = Class.forName("com.myairtelapp.logging.BreadcrumbLoggingUtils");
-        logBreadCrumb = breadcrumbLogger.getDeclaredMethod("logBugsnagBreadcrumb", String.class, String.class);
-        logBreadCrumb.setAccessible(true);
-      }
-      catch (java.lang.Exception e){}
     }
 
     /**
@@ -103,8 +84,8 @@ import java.lang.Class;
             + mPropName
             + "' in shadow node of type: "
             + nodeToUpdate.getViewClass();
-        logException.invoke(logger.newInstance(), new JSApplicationIllegalArgumentException(message, t));
-        logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
+        AirtelLogger.logException.invoke(AirtelLogger.errorLogger.newInstance(), new JSApplicationIllegalArgumentException(message, t));
+        AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
       }
       catch (java.lang.Exception e){}
     }
@@ -116,8 +97,8 @@ import java.lang.Class;
             + mPropName
             + "' of a view managed by: "
             + viewManager.getName();
-        logException.invoke(logger.newInstance(), new JSApplicationIllegalArgumentException(message, t));
-        logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
+        AirtelLogger.logException.invoke(AirtelLogger.errorLogger.newInstance(), new JSApplicationIllegalArgumentException(message, t));
+        AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
       }
       catch (java.lang.Exception e){}
     }
