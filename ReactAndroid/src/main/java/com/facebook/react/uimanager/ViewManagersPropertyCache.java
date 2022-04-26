@@ -34,6 +34,7 @@ import java.lang.Class;
 
   private static final Map<Class, Map<String, PropSetter>> CLASS_PROPS_CACHE = new HashMap<>();
   private static final Map<String, PropSetter> EMPTY_PROPS_MAP = new HashMap<>();
+  private static AirtelLogger airtelLogger;
 
   public static void clear() {
     CLASS_PROPS_CACHE.clear();
@@ -61,6 +62,7 @@ import java.lang.Class;
           ReactProp.USE_DEFAULT_TYPE.equals(prop.customType()) ? defaultType : prop.customType();
       mSetter = setter;
       mIndex = null;
+      airtelLogger = new AirtelLogger();
     }
 
     private PropSetter(ReactPropGroup prop, String defaultType, Method setter, int index) {
@@ -71,6 +73,7 @@ import java.lang.Class;
               : prop.customType();
       mSetter = setter;
       mIndex = index;
+      airtelLogger = new AirtelLogger();
     }
 
     /**
@@ -84,8 +87,8 @@ import java.lang.Class;
             + mPropName
             + "' in shadow node of type: "
             + nodeToUpdate.getViewClass();
-        AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), new JSApplicationIllegalArgumentException(message, t));
-        AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ViewManagersPropertyCache", message);
+       airtelLogger.getLogException().invoke(airtelLogger.getErrorLoggerInstance(), new JSApplicationIllegalArgumentException(message, t));
+       airtelLogger.getLogBreadCrumb().invoke(airtelLogger.getBreadcrumbLoggerInstance(), "ViewManagersPropertyCache", message);
       }
       catch (java.lang.Exception e){}
     }
@@ -97,8 +100,8 @@ import java.lang.Class;
             + mPropName
             + "' of a view managed by: "
             + viewManager.getName();
-        AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), new JSApplicationIllegalArgumentException(message, t));
-        AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ViewManagersPropertyCache", message);
+       airtelLogger.getLogException().invoke(airtelLogger.getErrorLoggerInstance(), new JSApplicationIllegalArgumentException(message, t));
+       airtelLogger.getLogBreadCrumb().invoke(airtelLogger.getBreadcrumbLoggerInstance(), "ViewManagersPropertyCache", message);
       }
       catch (java.lang.Exception e){}
     }
