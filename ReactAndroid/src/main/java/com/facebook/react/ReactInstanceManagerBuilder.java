@@ -18,7 +18,6 @@ import android.os.Build;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.facebook.logger.AirtelLogger;
 import com.facebook.hermes.reactexecutor.HermesExecutorFactory;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
@@ -67,9 +66,7 @@ public class ReactInstanceManagerBuilder {
   private @Nullable JSIModulePackage mJSIModulesPackage;
   private @Nullable Map<String, RequestHandler> mCustomPackagerCommandHandlers;
 
-  /* package protected */ ReactInstanceManagerBuilder() {
-    AirtelLogger.setUpAirtelLogger();
-  }
+  /* package protected */ ReactInstanceManagerBuilder() {}
 
   /** Sets a provider of {@link UIImplementation}. Uses default provider if null is passed. */
   public ReactInstanceManagerBuilder setUIImplementationProvider(

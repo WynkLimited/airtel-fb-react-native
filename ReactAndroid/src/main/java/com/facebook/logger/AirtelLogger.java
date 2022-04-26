@@ -10,7 +10,7 @@ public class AirtelLogger {
   public static Class logger, breadcrumbLogger;
   public static Method logException, logBreadCrumb;
 
-  public static void setUpAirtelLogger() {
+  static {
     try {
       logger = Class.forName("com.myairtelapp.logging.BugsnagLoggingUtils");
       logException = logger.getDeclaredMethod("logException", Exception.class);

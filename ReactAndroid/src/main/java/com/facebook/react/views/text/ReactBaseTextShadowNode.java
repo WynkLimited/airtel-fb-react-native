@@ -657,7 +657,7 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
       AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new java.lang.NullPointerException(message));
       AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message
         + "\n ReactShadowNode child has null text");
-    } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+    } catch (java.lang.Exception e) {
     }
 
   }
