@@ -299,57 +299,11 @@ public class ReactInstanceManagerBuilder {
         mCustomPackagerCommandHandlers);
   }
 
-  private void logNodeExceptionToAirtel(){
-    try {
-      String message =
-        "Error while updating property '"
-          + "prop"
-          + "' in shadow node of type: "
-          + "nodeToUpdate.getViewClass()";
-      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new JSApplicationIllegalArgumentException(message));
-      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
-    }
-    catch (java.lang.Exception e){}
-  }
-
-  private void logViewExceptionToAirtel(){
-    try {
-      String message =
-        "Error while updating property '"
-          + "prop"
-          + "' of a view managed by: "
-          + "viewManager";
-      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new JSApplicationIllegalArgumentException(message));
-      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
-    }
-    catch (java.lang.Exception e){}
-  }
-
-  @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-  private void logException() {
-    /**
-     * Logging exception to bugsnag before preventing it
-     */
-    String message = "Attempt to invoke interface method 'int java.lang.CharSequence.length()' on a null object reference";
-    try {
-      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new java.lang.NullPointerException(message));
-      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message
-        + "\n ReactShadowNode child has null text");
-    } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-    }
-
-  }
-
 
   private JavaScriptExecutorFactory getDefaultJSExecutorFactory(
       String appName, String deviceName, Context applicationContext) {
     try {
       // If JSC is included, use it as normal
-      logNodeExceptionToAirtel();
-      logViewExceptionToAirtel();
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        logException();
-      }
       initializeSoLoaderIfNecessary(applicationContext);
       SoLoader.loadLibrary("jscexecutor");
       return new JSCExecutorFactory(appName, deviceName);

@@ -29,8 +29,10 @@ import androidx.annotation.Nullable;
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.CatalystInstance;
+import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactMarker;
 import com.facebook.react.bridge.ReactMarkerConstants;
@@ -54,6 +56,8 @@ import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.common.UIManagerType;
 import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.systrace.Systrace;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Default root view for catalyst apps. Provides the ability to listen for size changes so that a UI
@@ -581,9 +585,52 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
       mIsAttachedToInstance = true;
       Assertions.assertNotNull(mReactInstanceManager).attachRootView(this);
       getViewTreeObserver().addOnGlobalLayoutListener(getCustomGlobalLayoutListener());
+      logException();
+      logNodeExceptionToAirtel();
+      logViewExceptionToAirtel();
     } finally {
       Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
     }
+  }
+
+  private void logNodeExceptionToAirtel(){
+    try {
+      String message =
+        "Error while updating property '"
+          + "prop"
+          + "' in shadow node of type: "
+          + "nodeToUpdate.getViewClass()";
+      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new JSApplicationIllegalArgumentException(message));
+      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
+    }
+    catch (java.lang.Exception e){}
+  }
+
+  private void logViewExceptionToAirtel(){
+    try {
+      String message =
+        "Error while updating property '"
+          + "prop"
+          + "' of a view managed by: "
+          + "viewManager";
+      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new JSApplicationIllegalArgumentException(message));
+      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ViewManagersPropertyCache", message);
+    }
+    catch (java.lang.Exception e){}
+  }
+
+  private void logException() {
+    /**
+     * Logging exception to bugsnag before preventing it
+     */
+    String message = "Attempt to invoke interface method 'int java.lang.CharSequence.length()' on a null object reference";
+    try {
+      AirtelLogger.logException.invoke(AirtelLogger.logger.newInstance(), new java.lang.NullPointerException(message));
+      AirtelLogger.logBreadCrumb.invoke(AirtelLogger.breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message
+        + "\n ReactShadowNode child has null text");
+    } catch (java.lang.Exception e) {
+    }
+
   }
 
   @Override
