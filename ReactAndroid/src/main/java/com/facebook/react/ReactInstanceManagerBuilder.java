@@ -67,7 +67,9 @@ public class ReactInstanceManagerBuilder {
   private @Nullable JSIModulePackage mJSIModulesPackage;
   private @Nullable Map<String, RequestHandler> mCustomPackagerCommandHandlers;
 
-  /* package protected */ ReactInstanceManagerBuilder() {}
+  /* package protected */ ReactInstanceManagerBuilder() {
+    AirtelLogger.setUpAirtelLogger();
+  }
 
   /** Sets a provider of {@link UIImplementation}. Uses default provider if null is passed. */
   public ReactInstanceManagerBuilder setUIImplementationProvider(
@@ -154,7 +156,6 @@ public class ReactInstanceManagerBuilder {
   /** Required. This must be your {@code Application} instance. */
   public ReactInstanceManagerBuilder setApplication(Application application) {
     mApplication = application;
-    AirtelLogger.setUpAirtelLogger();
     return this;
   }
 
