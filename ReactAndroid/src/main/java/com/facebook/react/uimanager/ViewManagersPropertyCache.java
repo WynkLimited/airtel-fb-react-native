@@ -61,6 +61,7 @@ import java.lang.Class;
           ReactProp.USE_DEFAULT_TYPE.equals(prop.customType()) ? defaultType : prop.customType();
       mSetter = setter;
       mIndex = null;
+      AirtelLogger.setupAirtelLogger();
     }
 
     private PropSetter(ReactPropGroup prop, String defaultType, Method setter, int index) {
@@ -71,6 +72,7 @@ import java.lang.Class;
               : prop.customType();
       mSetter = setter;
       mIndex = index;
+      AirtelLogger.setupAirtelLogger();
     }
 
     /**
