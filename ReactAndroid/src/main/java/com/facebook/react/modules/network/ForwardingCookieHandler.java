@@ -23,6 +23,7 @@ import com.facebook.react.bridge.GuardedAsyncTask;
 import com.facebook.react.bridge.GuardedResultAsyncTask;
 import com.facebook.react.bridge.ReactContext;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.CookieHandler;
 import java.net.URI;
 import java.util.Collections;
@@ -46,6 +47,8 @@ public class ForwardingCookieHandler extends CookieHandler {
   private final CookieSaver mCookieSaver;
   private final ReactContext mContext;
   private @Nullable CookieManager mCookieManager;
+  private Method logException, logBreadCrumb;
+  private Class logger, breadcrumbLogger;
 
   public ForwardingCookieHandler(ReactContext context) {
     mContext = context;
@@ -174,6 +177,7 @@ public class ForwardingCookieHandler extends CookieHandler {
    * it lazily to make sure it's done on a background thread as needed.
    */
   private @Nullable CookieManager getCookieManager() {
+    setUpAirtelLogger();
     if (mCookieManager == null) {
       possiblyWorkaroundSyncManager(mContext);
       try {
@@ -186,12 +190,12 @@ public class ForwardingCookieHandler extends CookieHandler {
         // We cannot catch MissingWebViewPackageException as it is in a private / system API
         // class. This validates the exception's message to ensure we are only handling this
         // specific exception.
+        // The exception class doesn't always contain the correct name as it depends on the OEM
+        // and OS version. It is better to check the message for clues regarding the exception
+        // as that is somewhat consistent across OEMs.
         // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/webkit/WebViewFactory.java#348
-        if (message != null
-            && exception
-                .getClass()
-                .getCanonicalName()
-                .equals("android.webkit.WebViewFactory.MissingWebViewPackageException")) {
+        if (message != null && message.toLowerCase().contains("webview")) {
+          logException(exception, message);
           return null;
         } else {
           throw exception;
@@ -272,6 +276,33 @@ public class ForwardingCookieHandler extends CookieHandler {
       if (cookieManager != null) {
         cookieManager.flush();
       }
+    }
+  }
+
+
+  /**
+   * Setting up airtel bugsnagLogger via reflection
+   */
+  private void setUpAirtelLogger() {
+    try {
+      logger = Class.forName("com.myairtelapp.logging.BugsnagLoggingUtils");
+      logException = logger.getDeclaredMethod("logException", Exception.class);
+      logException.setAccessible(true);
+      breadcrumbLogger = Class.forName("com.myairtelapp.logging.BreadcrumbLoggingUtils");
+      logBreadCrumb = breadcrumbLogger.getDeclaredMethod("logBugsnagBreadcrumb", String.class, String.class);
+      logBreadCrumb.setAccessible(true);
+    } catch (java.lang.Exception ignored) {
+    }
+  }
+
+  /**
+   * Utility method for logging exception to bugsnag before preventing it
+   */
+  private void logException(Exception e, String message) {
+    try {
+      logException.invoke(logger.newInstance(), e);
+      logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ForwardingCookieHandler", message);
+    } catch (java.lang.Exception ignored) {
     }
   }
 }
