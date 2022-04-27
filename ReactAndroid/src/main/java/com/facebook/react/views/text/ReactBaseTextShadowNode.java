@@ -31,6 +31,8 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.yoga.YogaDirection;
 import com.facebook.yoga.YogaUnit;
 import com.facebook.yoga.YogaValue;
+
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +69,9 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
 
   protected @Nullable ReactTextViewManagerCallback mReactTextViewManagerCallback;
 
+  private static Class logger, breadcrumbLogger;
+  private static Method logException, logBreadCrumb;
+
   private static class SetSpanOperation {
     protected int start, end;
     protected ReactSpan what;
@@ -101,6 +106,8 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
       Map<Integer, ReactShadowNode> inlineViews,
       int start) {
 
+    setUpAirtelLogger();
+
     TextAttributes textAttributes;
     if (parentTextAttributes != null) {
       textAttributes = parentTextAttributes.applyChild(textShadowNode.mTextAttributes);
@@ -110,11 +117,20 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
 
     for (int i = 0, length = textShadowNode.getChildCount(); i < length; i++) {
       ReactShadowNode child = textShadowNode.getChildAt(i);
+      logBreadCrumb(child);
 
       if (child instanceof ReactRawTextShadowNode) {
-        sb.append(
-            TextTransform.apply(
-                ((ReactRawTextShadowNode) child).getText(), textAttributes.getTextTransform()));
+        String text = TextTransform.apply(
+          ((ReactRawTextShadowNode) child).getText(), textAttributes.getTextTransform());
+        try {
+          if (text != null) {
+            sb.append(text);
+          } else {
+            logException(child);
+          }
+        } catch (Exception e){
+          logException(e);
+        }
       } else if (child instanceof ReactBaseTextShadowNode) {
         buildSpannedFromShadowNode(
             (ReactBaseTextShadowNode) child,
@@ -637,5 +653,54 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
       mMinimumFontScale = minimumFontScale;
       markUpdated();
     }
+  }
+
+  /**
+   * Setting up airtel bugsnagLogger via reflection
+   */
+  private static void setUpAirtelLogger() {
+    try {
+      logger = Class.forName("com.myairtelapp.logging.BugsnagLoggingUtils");
+      logException = logger.getDeclaredMethod("logException", Exception.class);
+      logException.setAccessible(true);
+      breadcrumbLogger = Class.forName("com.myairtelapp.logging.BreadcrumbLoggingUtils");
+      logBreadCrumb = breadcrumbLogger.getDeclaredMethod("logBugsnagBreadcrumb", String.class, String.class);
+      logBreadCrumb.setAccessible(true);
+    } catch (java.lang.Exception ignored) {}
+  }
+
+  /**
+   * Utility method for logging exception to bugsnag before preventing it
+   */
+  private static void logException(ReactShadowNode child) {
+    String message = "Attempt to invoke interface method 'int java.lang.CharSequence.length()' on a null object reference";
+    try {
+      logException.invoke(logger.newInstance(), new java.lang.NullPointerException(message));
+      logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message
+        + "\n ReactShadowNode" + child.toString() + "has null text");
+    } catch (java.lang.Exception ignored) {}
+  }
+
+  private static void logException(Exception e) {
+    try {
+      logException.invoke(logger.newInstance(), e);
+      logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", e.getMessage());
+    } catch (java.lang.Exception ignored) {}
+  }
+
+  private static void logBreadCrumb(ReactShadowNode child) {
+    try {
+      String message = "Child node: " + child.toString();
+      if (child.getParent() != null) {
+        message += "\nparent: " + child.getParent();
+      }
+      if (child.getNativeParent() != null) {
+        message += "\nnative parent: " + child.getNativeParent();
+      }
+      if (child.getLayoutParent() != null) {
+        message += "\nlayout parent: " + child.getLayoutParent();
+      }
+      logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message);
+    } catch (java.lang.Exception ignored) {}
   }
 }
