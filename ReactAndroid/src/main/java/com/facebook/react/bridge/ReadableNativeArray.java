@@ -84,17 +84,29 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
 
   @Override
   public boolean getBoolean(int index) {
-    return ((Boolean) getLocalArray()[index]).booleanValue();
+    Object value = getLocalArray()[index];
+    if(value == null){
+      return false;
+    }
+    return ((Boolean) value).booleanValue();
   }
 
   @Override
   public double getDouble(int index) {
-    return ((Double) getLocalArray()[index]).doubleValue();
+    Object value = getLocalArray()[index];
+    if(value == null){
+      return 0d;
+    }
+    return ((Double) value).doubleValue();
   }
 
   @Override
   public int getInt(int index) {
-    return ((Double) getLocalArray()[index]).intValue();
+    Object value = getLocalArray()[index];
+    if(value == null){
+      return 0;
+    }
+    return ((Double) value).intValue();
   }
 
   @Override
