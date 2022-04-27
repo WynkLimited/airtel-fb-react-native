@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import androidx.annotation.Nullable;
 import com.facebook.infer.annotation.Assertions;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
@@ -32,7 +33,6 @@ import com.facebook.yoga.YogaDirection;
 import com.facebook.yoga.YogaUnit;
 import com.facebook.yoga.YogaValue;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,9 +69,6 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
 
   protected @Nullable ReactTextViewManagerCallback mReactTextViewManagerCallback;
 
-  private static Class logger, breadcrumbLogger;
-  private static Method logException, logBreadCrumb;
-
   private static class SetSpanOperation {
     protected int start, end;
     protected ReactSpan what;
@@ -105,8 +102,6 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
       boolean supportsInlineViews,
       Map<Integer, ReactShadowNode> inlineViews,
       int start) {
-
-    setUpAirtelLogger();
 
     TextAttributes textAttributes;
     if (parentTextAttributes != null) {
@@ -656,35 +651,21 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
   }
 
   /**
-   * Setting up airtel bugsnagLogger via reflection
-   */
-  private static void setUpAirtelLogger() {
-    try {
-      logger = Class.forName("com.myairtelapp.logging.BugsnagLoggingUtils");
-      logException = logger.getDeclaredMethod("logException", Exception.class);
-      logException.setAccessible(true);
-      breadcrumbLogger = Class.forName("com.myairtelapp.logging.BreadcrumbLoggingUtils");
-      logBreadCrumb = breadcrumbLogger.getDeclaredMethod("logBugsnagBreadcrumb", String.class, String.class);
-      logBreadCrumb.setAccessible(true);
-    } catch (java.lang.Exception ignored) {}
-  }
-
-  /**
    * Utility method for logging exception to bugsnag before preventing it
    */
   private static void logException(ReactShadowNode child) {
     String message = "Attempt to invoke interface method 'int java.lang.CharSequence.length()' on a null object reference";
     try {
-      logException.invoke(logger.newInstance(), new java.lang.NullPointerException(message));
-      logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), new java.lang.NullPointerException(message));
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReactBaseTextShadowNode", message
         + "\n ReactShadowNode" + child.toString() + "has null text");
     } catch (java.lang.Exception ignored) {}
   }
 
   private static void logException(Exception e) {
     try {
-      logException.invoke(logger.newInstance(), e);
-      logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", e.getMessage());
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReactBaseTextShadowNode", e.getMessage());
     } catch (java.lang.Exception ignored) {}
   }
 
@@ -700,7 +681,7 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
       if (child.getLayoutParent() != null) {
         message += "\nlayout parent: " + child.getLayoutParent();
       }
-      logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ReactBaseTextShadowNode", message);
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReactBaseTextShadowNode", message);
     } catch (java.lang.Exception ignored) {}
   }
 }
