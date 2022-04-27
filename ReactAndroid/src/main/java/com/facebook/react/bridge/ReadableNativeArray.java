@@ -12,6 +12,8 @@ import androidx.annotation.Nullable;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;
+
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -24,6 +26,9 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
   static {
     ReactBridge.staticInit();
   }
+
+  private Method logException, logBreadCrumb;
+  private Class logger, breadcrumbLogger;
 
   protected ReadableNativeArray(HybridData hybridData) {
     super(hybridData);
@@ -86,6 +91,7 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
   public boolean getBoolean(int index) {
     Object value = getLocalArray()[index];
     if(value == null){
+      logBreadcrumb(index);
       return false;
     }
     return ((Boolean) value).booleanValue();
@@ -95,6 +101,7 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
   public double getDouble(int index) {
     Object value = getLocalArray()[index];
     if(value == null){
+      logBreadcrumb(index);
       return 0d;
     }
     return ((Double) value).doubleValue();
@@ -104,6 +111,7 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
   public int getInt(int index) {
     Object value = getLocalArray()[index];
     if(value == null){
+      logBreadcrumb(index);
       return 0;
     }
     return ((Double) value).intValue();
@@ -177,5 +185,42 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       }
     }
     return arrayList;
+  }
+
+
+  /**
+   * Setting up airtel bugsnagLogger via reflection
+   */
+  private void setUpAirtelLogger() {
+    try {
+      logger = Class.forName("com.myairtelapp.logging.BugsnagLoggingUtils");
+      logException = logger.getDeclaredMethod("logException", Exception.class);
+      logException.setAccessible(true);
+      breadcrumbLogger = Class.forName("com.myairtelapp.logging.BreadcrumbLoggingUtils");
+      logBreadCrumb = breadcrumbLogger.getDeclaredMethod("logBugsnagBreadcrumb", String.class, String.class);
+      logBreadCrumb.setAccessible(true);
+    } catch (java.lang.Exception ignored) {
+    }
+  }
+
+  /**
+   * Utility method for logging exception to bugsnag before preventing it
+   */
+  private void logBreadcrumb(int index) {
+    setUpAirtelLogger();
+    try {
+      StringBuilder message = new StringBuilder();
+      Object[] localArray = getLocalArray();
+      int n = localArray.length;
+      if (n > 0) {
+        message = new StringBuilder("Local Array Contains:");
+        for (int i = 0; i < n; i++) {
+          message.append("\nArray ").append(i).append(": ").append(localArray[i].toString());
+        }
+      }
+      logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ReadableNativeArray", message.toString());
+      logBreadCrumb.invoke(breadcrumbLogger.newInstance(), "ReadableNativeArray", "Index " + index + "is null");
+
+    } catch (java.lang.Exception ignored) {}
   }
 }
