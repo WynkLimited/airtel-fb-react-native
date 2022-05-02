@@ -91,7 +91,12 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       logBreadcrumb(index);
       return false;
     }
-    return ((Boolean) value).booleanValue();
+    try{
+      return ((Boolean) value).booleanValue();
+    }
+    catch (Exception e){
+      return false;
+    }
   }
 
   @Override
@@ -101,7 +106,12 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       logBreadcrumb(index);
       return 0d;
     }
-    return ((Double) value).doubleValue();
+    try {
+      return ((Double) value).doubleValue();
+    }
+    catch (Exception e){
+      return 0d;
+    }
   }
 
   @Override
@@ -111,12 +121,22 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       logBreadcrumb(index);
       return 0;
     }
-    return ((Double) value).intValue();
+    try {
+      return ((Double) value).intValue();
+    }
+    catch (Exception e){
+      return 0;
+    }
   }
 
   @Override
   public @Nullable String getString(int index) {
-    return (String) getLocalArray()[index];
+    try {
+      return (String) getLocalArray()[index];
+    }
+    catch (Exception e){
+      return "";
+    }
   }
 
   @Override
