@@ -95,6 +95,7 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       return ((Boolean) value).booleanValue();
     }
     catch (Exception e){
+      logException(e);
       return false;
     }
   }
@@ -110,6 +111,7 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       return ((Double) value).doubleValue();
     }
     catch (Exception e){
+      logException(e);
       return 0d;
     }
   }
@@ -125,6 +127,7 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       return ((Double) value).intValue();
     }
     catch (Exception e){
+      logException(e);
       return 0;
     }
   }
@@ -135,6 +138,7 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       return (String) getLocalArray()[index];
     }
     catch (Exception e){
+      logException(e);
       return "";
     }
   }
@@ -220,6 +224,15 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       }
       AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReadableNativeArray", message.toString());
       AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReadableNativeArray", "Index " + index + "is null");
+    } catch (java.lang.Exception ignored) {}
+  }
+
+  /**
+   * Utility method for logging exception to bugsnag before preventing it
+   */
+  private void logException(Exception e) {
+    try {
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
     } catch (java.lang.Exception ignored) {}
   }
 }
