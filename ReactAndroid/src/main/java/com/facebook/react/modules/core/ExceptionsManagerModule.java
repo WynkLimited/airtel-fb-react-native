@@ -9,6 +9,7 @@ package com.facebook.react.modules.core;
 
 import com.facebook.common.logging.FLog;
 import com.facebook.fbreact.specs.NativeExceptionsManagerSpec;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.JavaOnlyMap;
 import com.facebook.react.bridge.ReadableArray;
@@ -80,8 +81,19 @@ public class ExceptionsManagerModule extends NativeExceptionsManagerSpec {
     } else {
       String extraDataAsJson = ExceptionDataHelper.getExtraDataAsJson(data);
       if (isFatal) {
-        throw new JavascriptException(JSStackTrace.format(message, stack))
-            .setExtraDataAsJson(extraDataAsJson);
+        /**
+         * Logging exception to bugsnag instead of throwing exception and crashing app
+         */
+        JavascriptException exception = new JavascriptException(JSStackTrace.format(message, stack));
+        exception.setExtraDataAsJson(extraDataAsJson);
+        String breadcrumb = "Fatal Exception: " + message;
+        if (stack != null && stack.size() > 0) {
+          breadcrumb += "\nStack Trace: " + stack.toString();
+        }
+        try {
+          AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), exception);
+          AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), breadcrumb);
+        } catch (java.lang.Exception ignored) {}
       } else {
         FLog.e(ReactConstants.TAG, JSStackTrace.format(message, stack));
         if (extraDataAsJson != null) {
