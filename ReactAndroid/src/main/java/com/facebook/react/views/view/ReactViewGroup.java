@@ -928,7 +928,7 @@ public class ReactViewGroup extends ViewGroup
 
   private void logException(Exception e) {
     try {
-      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getLogException(), e);
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
     } catch (Exception ignored) {}
   }
 
