@@ -92,7 +92,8 @@ public class ExceptionsManagerModule extends NativeExceptionsManagerSpec {
         }
         try {
           AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), exception);
-          AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), breadcrumb);
+          AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(),
+            "ExceptionsManagerModule", breadcrumb);
         } catch (java.lang.Exception ignored) {}
       } else {
         FLog.e(ReactConstants.TAG, JSStackTrace.format(message, stack));
