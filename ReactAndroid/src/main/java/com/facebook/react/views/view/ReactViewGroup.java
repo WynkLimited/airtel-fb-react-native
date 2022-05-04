@@ -23,11 +23,13 @@ import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.ViewStructure;
 import android.view.animation.Animation;
 import androidx.annotation.Nullable;
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.common.annotations.VisibleForTesting;
@@ -461,8 +463,26 @@ public class ReactViewGroup extends ViewGroup
     // method.
     mDrawingOrderHelper.handleAddView(child);
     setChildrenDrawingOrderEnabled(mDrawingOrderHelper.shouldEnableCustomDrawingOrder());
-
-    super.addView(child, index, params);
+    /**
+     * If child already has a parent, try to call removeView on its parent
+     */
+    if (child.getParent() != null) {
+      try {
+        ViewParent parent = child.getParent();
+        String message = "Child(" + child.getClass().getName() + ")[" + child +
+          "] already has a parent: " + parent.getClass().getName() + "[" + parent + "]";
+        logBreadcrumb(message);
+        ((ViewGroup) parent).removeView(child);
+      } catch (Exception ignored) {}
+    }
+    /**
+     * Try to call addView now and log exception if it occurs
+     */
+    try {
+      super.addView(child, index, params);
+    } catch (Exception e) {
+      logException(e);
+    }
   }
 
   @Override
@@ -904,5 +924,18 @@ public class ReactViewGroup extends ViewGroup
     }
 
     setAlpha(0);
+  }
+
+  private void logException(Exception e) {
+    try {
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getLogException(), e);
+    } catch (Exception ignored) {}
+  }
+
+  private void logBreadcrumb(String message) {
+    try {
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(),
+        "ReactViewGroup", message);
+    } catch (Exception ignored) {}
   }
 }

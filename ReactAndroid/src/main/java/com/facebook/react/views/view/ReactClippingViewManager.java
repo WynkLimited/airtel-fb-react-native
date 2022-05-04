@@ -8,6 +8,8 @@
 package com.facebook.react.views.view;
 
 import android.view.View;
+
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -32,10 +34,21 @@ public abstract class ReactClippingViewManager<T extends ReactViewGroup>
     UiThreadUtil.assertOnUiThread();
 
     boolean removeClippedSubviews = parent.getRemoveClippedSubviews();
-    if (removeClippedSubviews) {
-      parent.addViewWithSubviewClippingEnabled(child, index);
-    } else {
-      parent.addView(child, index);
+    try {
+      if (removeClippedSubviews) {
+        parent.addViewWithSubviewClippingEnabled(child, index);
+      } else {
+        parent.addView(child, index);
+      }
+    }
+    catch (Exception e){
+      try {
+        String message = "Exception occurred: " + e.getMessage();
+        AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
+        AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(),
+          "ReactClippingViewManager", message);
+      }
+      catch (Exception ignored){}
     }
   }
 
