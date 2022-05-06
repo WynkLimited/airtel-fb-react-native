@@ -9,7 +9,7 @@ public class AirtelLogger {
   private Object breadcrumbLoggerInstance, errorLoggerInstance;
   public static AirtelLogger instance = null;
 
-  public AirtelLogger(){
+  private AirtelLogger(){
     setupAirtelLogger();
   }
 
