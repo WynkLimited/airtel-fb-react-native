@@ -13,6 +13,7 @@ import android.view.View.MeasureSpec;
 import androidx.annotation.Nullable;
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -704,14 +705,16 @@ public class UIImplementation {
   @Deprecated
   public void dispatchViewManagerCommand(
       int reactTag, int commandId, @Nullable ReadableArray commandArgs) {
-    assertViewExists(reactTag, "dispatchViewManagerCommand");
-    mOperationsQueue.enqueueDispatchCommand(reactTag, commandId, commandArgs);
+      if (assertViewExists(reactTag, "dispatchViewManagerCommand")) {
+        mOperationsQueue.enqueueDispatchCommand(reactTag, commandId, commandArgs);
+      }
   }
 
   public void dispatchViewManagerCommand(
       int reactTag, String commandId, @Nullable ReadableArray commandArgs) {
-    assertViewExists(reactTag, "dispatchViewManagerCommand");
-    mOperationsQueue.enqueueDispatchCommand(reactTag, commandId, commandArgs);
+      if (assertViewExists(reactTag, "dispatchViewManagerCommand")) {
+        mOperationsQueue.enqueueDispatchCommand(reactTag, commandId, commandArgs);
+      }
   }
 
   /**
@@ -725,8 +728,9 @@ public class UIImplementation {
    *     no arguments if the menu is dismissed
    */
   public void showPopupMenu(int reactTag, ReadableArray items, Callback error, Callback success) {
-    assertViewExists(reactTag, "showPopupMenu");
-    mOperationsQueue.enqueueShowPopupMenu(reactTag, items, error, success);
+    if (assertViewExists(reactTag, "showPopupMenu")) {
+      mOperationsQueue.enqueueShowPopupMenu(reactTag, items, error, success);
+    }
   }
 
   public void dismissPopupMenu() {
@@ -825,16 +829,19 @@ public class UIImplementation {
     outputBuffer[3] = node.getScreenHeight();
   }
 
-  private void assertViewExists(int reactTag, String operationNameForExceptionMessage) {
+  private boolean assertViewExists(int reactTag, String operationNameForExceptionMessage) {
     if (mShadowNodeRegistry.getNode(reactTag) == null) {
-      throw new IllegalViewOperationException(
-          "Unable to execute operation "
-              + operationNameForExceptionMessage
-              + " on view with "
-              + "tag: "
-              + reactTag
-              + ", since the view does not exists");
+      String message = "Unable to execute operation "
+        + operationNameForExceptionMessage
+        + " on view with "
+        + "tag: "
+        + reactTag
+        + ", since the view does not exists";
+      logException(new IllegalViewOperationException(message));
+      logBreadCrumb(message);
+      return false;
     }
+    return true;
   }
 
   private void assertNodeDoesNotNeedCustomLayoutForChildren(ReactShadowNode node) {
@@ -958,5 +965,18 @@ public class UIImplementation {
 
   public void removeLayoutUpdateListener() {
     mLayoutUpdateListener = null;
+  }
+
+  private void logException(Exception e) {
+    try {
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
+    } catch (Exception ignored) {}
+  }
+
+  private void logBreadCrumb(String message) {
+    try {
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(),
+        "UIImplementation", message);
+    } catch (Exception ignored) {}
   }
 }
