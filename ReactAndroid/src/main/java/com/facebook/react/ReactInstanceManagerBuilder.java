@@ -16,6 +16,7 @@ import android.content.Context;
 import androidx.annotation.Nullable;
 import com.facebook.hermes.reactexecutor.HermesExecutorFactory;
 import com.facebook.infer.annotation.Assertions;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.JSBundleLoader;
 import com.facebook.react.bridge.JSIModulePackage;
 import com.facebook.react.bridge.JavaScriptExecutorFactory;
@@ -293,6 +294,10 @@ public class ReactInstanceManagerBuilder {
       String appName, String deviceName, Context applicationContext) {
     try {
       // If JSC is included, use it as normal
+      try{
+        AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(),new IllegalStateException("Test log"));
+      }
+      catch (Exception ignored){}
       initializeSoLoaderIfNecessary(applicationContext);
       SoLoader.loadLibrary("jscexecutor");
       return new JSCExecutorFactory(appName, deviceName);
