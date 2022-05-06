@@ -11,7 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.jni.HybridData;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.proguard.annotations.DoNotStrip;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -84,22 +86,61 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
 
   @Override
   public boolean getBoolean(int index) {
-    return ((Boolean) getLocalArray()[index]).booleanValue();
+    Object value = getLocalArray()[index];
+    if(value == null){
+      logBreadcrumb(index);
+      return false;
+    }
+    try{
+      return ((Boolean) value).booleanValue();
+    }
+    catch (Exception e){
+      logException(e);
+      return false;
+    }
   }
 
   @Override
   public double getDouble(int index) {
-    return ((Double) getLocalArray()[index]).doubleValue();
+    Object value = getLocalArray()[index];
+    if(value == null){
+      logBreadcrumb(index);
+      return 0d;
+    }
+    try {
+      return ((Double) value).doubleValue();
+    }
+    catch (Exception e){
+      logException(e);
+      return 0d;
+    }
   }
 
   @Override
   public int getInt(int index) {
-    return ((Double) getLocalArray()[index]).intValue();
+    Object value = getLocalArray()[index];
+    if(value == null){
+      logBreadcrumb(index);
+      return 0;
+    }
+    try {
+      return ((Double) value).intValue();
+    }
+    catch (Exception e){
+      logException(e);
+      return 0;
+    }
   }
 
   @Override
   public @Nullable String getString(int index) {
-    return (String) getLocalArray()[index];
+    try {
+      return (String) getLocalArray()[index];
+    }
+    catch (Exception e){
+      logException(e);
+      return "";
+    }
   }
 
   @Override
@@ -165,5 +206,33 @@ public class ReadableNativeArray extends NativeArray implements ReadableArray {
       }
     }
     return arrayList;
+  }
+
+  /**
+   * Utility method for logging exception to bugsnag before preventing it
+   */
+  private void logBreadcrumb(int index) {
+    try {
+      StringBuilder message = new StringBuilder();
+      Object[] localArray = getLocalArray();
+      int n = localArray.length;
+      if (n > 0) {
+        message = new StringBuilder("Local Array Contains:");
+        for (int i = 0; i < n; i++) {
+          message.append("\nArray ").append(i).append(": ").append(localArray[i].toString());
+        }
+      }
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReadableNativeArray", message.toString());
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReadableNativeArray", "Index " + index + "is null");
+    } catch (java.lang.Exception ignored) {}
+  }
+
+  /**
+   * Utility method for logging exception to bugsnag before preventing it
+   */
+  private void logException(Exception e) {
+    try {
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
+    } catch (java.lang.Exception ignored) {}
   }
 }

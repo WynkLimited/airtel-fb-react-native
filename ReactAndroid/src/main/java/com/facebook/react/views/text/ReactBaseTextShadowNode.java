@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import androidx.annotation.Nullable;
 import com.facebook.infer.annotation.Assertions;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
@@ -31,6 +32,7 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.yoga.YogaDirection;
 import com.facebook.yoga.YogaUnit;
 import com.facebook.yoga.YogaValue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,11 +112,20 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
 
     for (int i = 0, length = textShadowNode.getChildCount(); i < length; i++) {
       ReactShadowNode child = textShadowNode.getChildAt(i);
+      logBreadCrumb(child);
 
       if (child instanceof ReactRawTextShadowNode) {
-        sb.append(
-            TextTransform.apply(
-                ((ReactRawTextShadowNode) child).getText(), textAttributes.getTextTransform()));
+        String text = TextTransform.apply(
+          ((ReactRawTextShadowNode) child).getText(), textAttributes.getTextTransform());
+        try {
+          if (text != null) {
+            sb.append(text);
+          } else {
+            logException(child);
+          }
+        } catch (Exception e){
+          logException(e);
+        }
       } else if (child instanceof ReactBaseTextShadowNode) {
         buildSpannedFromShadowNode(
             (ReactBaseTextShadowNode) child,
@@ -637,5 +648,40 @@ public abstract class ReactBaseTextShadowNode extends LayoutShadowNode {
       mMinimumFontScale = minimumFontScale;
       markUpdated();
     }
+  }
+
+  /**
+   * Utility method for logging exception to bugsnag before preventing it
+   */
+  private static void logException(ReactShadowNode child) {
+    String message = "Attempt to invoke interface method 'int java.lang.CharSequence.length()' on a null object reference";
+    try {
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), new java.lang.NullPointerException(message));
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReactBaseTextShadowNode", message
+        + "\n ReactShadowNode" + child.toString() + "has null text");
+    } catch (java.lang.Exception ignored) {}
+  }
+
+  private static void logException(Exception e) {
+    try {
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReactBaseTextShadowNode", e.getMessage());
+    } catch (java.lang.Exception ignored) {}
+  }
+
+  private static void logBreadCrumb(ReactShadowNode child) {
+    try {
+      String message = "Child node: " + child.toString();
+      if (child.getParent() != null) {
+        message += "\nparent: " + child.getParent();
+      }
+      if (child.getNativeParent() != null) {
+        message += "\nnative parent: " + child.getNativeParent();
+      }
+      if (child.getLayoutParent() != null) {
+        message += "\nlayout parent: " + child.getLayoutParent();
+      }
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ReactBaseTextShadowNode", message);
+    } catch (java.lang.Exception ignored) {}
   }
 }

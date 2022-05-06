@@ -18,11 +18,14 @@ import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.ValueCallback;
 import androidx.annotation.Nullable;
+
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.GuardedAsyncTask;
 import com.facebook.react.bridge.GuardedResultAsyncTask;
 import com.facebook.react.bridge.ReactContext;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.CookieHandler;
 import java.net.URI;
 import java.util.Collections;
@@ -186,12 +189,12 @@ public class ForwardingCookieHandler extends CookieHandler {
         // We cannot catch MissingWebViewPackageException as it is in a private / system API
         // class. This validates the exception's message to ensure we are only handling this
         // specific exception.
+        // The exception class doesn't always contain the correct name as it depends on the OEM
+        // and OS version. It is better to check the message for clues regarding the exception
+        // as that is somewhat consistent across OEMs.
         // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/webkit/WebViewFactory.java#348
-        if (message != null
-            && exception
-                .getClass()
-                .getCanonicalName()
-                .equals("android.webkit.WebViewFactory.MissingWebViewPackageException")) {
+        if (message != null && message.toLowerCase().contains("webview")) {
+          logException(exception, message);
           return null;
         } else {
           throw exception;
@@ -272,6 +275,17 @@ public class ForwardingCookieHandler extends CookieHandler {
       if (cookieManager != null) {
         cookieManager.flush();
       }
+    }
+  }
+
+  /**
+   * Utility method for logging exception to bugsnag before preventing it
+   */
+  private void logException(Exception e, String message) {
+    try {
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), "ForwardingCookieHandler", message);
+    } catch (java.lang.Exception ignored) {
     }
   }
 }
