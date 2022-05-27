@@ -345,7 +345,6 @@ public class ReactModalHostView extends ViewGroup implements LifecycleEventListe
    * true when the property changes
    */
   private void updateProperties() {
-    // preventing: https://app.bugsnag.com/airtel-1/airtel-thanks/errors/626a538201f4df00080f039b?event_id=62764d4f0093eec7bcb00000&i=jr&m=ci&pivot_tab=event
     try {
       Assertions.assertNotNull(mDialog, "mDialog must exist when we call updateProperties");
 
