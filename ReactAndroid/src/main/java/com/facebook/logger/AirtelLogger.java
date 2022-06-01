@@ -20,6 +20,8 @@ public class AirtelLogger {
     return instance;
   }
 
+  // test commit 1
+
   private void setupAirtelLogger() {
     try {
       errorLogger = Class.forName("com.myairtelapp.logging.BugsnagLoggingUtils");
