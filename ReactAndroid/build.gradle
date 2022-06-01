@@ -109,12 +109,12 @@ task prepareFolly(dependsOn: dependenciesPath ? [] : [downloadFolly], type: Copy
 task prepareHermes() {
     def hermesPackagePath = findNodeModulePath(projectDir, "hermes-engine")
     if (!hermesPackagePath) {
-        throw new FileNotFoundException("Could not find the hermes-engine npm package")
+        throw new GradleScriptException("Could not find the hermes-engine npm package")
     }
 
     def hermesAAR = file("$hermesPackagePath/android/hermes-debug.aar")
     if (!hermesAAR.exists()) {
-        throw new FileNotFoundException("The hermes-engine npm package is missing \"android/hermes-debug.aar\"")
+        throw new GradleScriptException("The hermes-engine npm package is missing \"android/hermes-debug.aar\"")
     }
 
     def soFiles = zipTree(hermesAAR).matching({ it.include "**/*.so" })
@@ -176,12 +176,12 @@ task prepareJSC {
     doLast {
         def jscPackagePath = findNodeModulePath(projectDir, "jsc-android")
         if (!jscPackagePath) {
-            throw new FileNotFoundException("Could not find the jsc-android npm package")
+            throw new GradleScriptException("Could not find the jsc-android npm package")
         } 
 
         def jscDist = file("$jscPackagePath/dist")
         if (!jscDist.exists()) {
-            throw new FileNotFoundException("The jsc-android npm package is missing its \"dist\" directory")
+            throw new GradleScriptException("The jsc-android npm package is missing its \"dist\" directory")
         }
 
         def jscAAR = fileTree(jscDist).matching({ it.include "**/android-jsc/**/*.aar" }).singleFile
@@ -290,14 +290,14 @@ def reactNativeInspectorProxyPort() {
 def getNdkBuildFullPath() {
     def ndkBuildFullPath = findNdkBuildFullPath()
     if (ndkBuildFullPath == null) {
-        throw new FileNotFoundException(
+        throw new GradleScriptException(
                 "ndk-build binary cannot be found, check if you've set " +
                         "\$ANDROID_NDK environment variable correctly or if ndk.dir is " +
                         "setup in local.properties",
                 null)
     }
     if (!new File(ndkBuildFullPath).canExecute()) {
-        throw new FileNotFoundException(
+        throw new GradleScriptException(
                 "ndk-build binary " + ndkBuildFullPath + " doesn't exist or isn't executable.\n" +
                         "Check that the \$ANDROID_NDK environment variable, or ndk.dir in local.properties, is set correctly.\n" +
                         "(On Windows, make sure you escape backslashes in local.properties or use forward slashes, e.g. C:\\\\ndk or C:/ndk rather than C:\\ndk)",
