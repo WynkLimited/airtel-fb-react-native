@@ -20,6 +20,7 @@ import android.view.ViewParent;
 import android.widget.PopupMenu;
 import androidx.annotation.Nullable;
 import com.facebook.common.logging.FLog;
+import com.facebook.logger.AirtelLogger;
 import com.facebook.react.R;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
@@ -213,7 +214,15 @@ public class NativeViewHierarchyManager {
       } else {
         updateLayout(viewToUpdate, x, y, width, height);
       }
-    } finally {
+    } catch (Exception e) {
+      try {
+        AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
+        AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(),
+          "NativeViewHierarchyManager",
+          "onMeasure() did not set the measured dimension by calling setMeasuredDimension(): \n" + e.getMessage());
+      } catch (Exception ignored) {}
+    }
+    finally {
       Systrace.endSection(Systrace.TRACE_TAG_REACT_VIEW);
     }
   }
