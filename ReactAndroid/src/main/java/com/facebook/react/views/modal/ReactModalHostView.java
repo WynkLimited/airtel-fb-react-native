@@ -343,6 +343,9 @@ public class ReactModalHostView extends ViewGroup implements LifecycleEventListe
    * Properties that do require us to recreate the dialog should set mPropertyRequiresNewDialog to
    * true when the property changes
    */
+
+
+
   private void updateProperties() {
     Assertions.assertNotNull(mDialog, "mDialog must exist when we call updateProperties");
 
