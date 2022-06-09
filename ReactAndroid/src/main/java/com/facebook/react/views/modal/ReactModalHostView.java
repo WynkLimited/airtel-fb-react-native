@@ -363,6 +363,10 @@ public class ReactModalHostView extends ViewGroup implements LifecycleEventListe
   }
 
   /**
+   * Testing concurrent merge 2
+   */
+
+  /**
    * DialogRootViewGroup is the ViewGroup which contains all the children of a Modal. It gets all
    * child information forwarded from ReactModalHostView and uses that to create children. It is
    * also responsible for acting as a RootView and handling touch events. It does this the same way
