@@ -347,7 +347,6 @@ public class ReactModalHostView extends ViewGroup implements LifecycleEventListe
 
 
   private void updateProperties() {
-    Assertions.assertNotNull(mDialog, "mDialog must exist when we call updateProperties");
 
     Activity currentActivity = getCurrentActivity();
     if (currentActivity != null) {
