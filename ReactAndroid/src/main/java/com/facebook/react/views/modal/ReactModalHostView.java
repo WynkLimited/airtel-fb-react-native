@@ -338,11 +338,7 @@ public class ReactModalHostView extends ViewGroup implements LifecycleEventListe
     return frameLayout;
   }
 
-  /**
-   * updateProperties will update the properties that do not require us to recreate the dialog
-   * Properties that do require us to recreate the dialog should set mPropertyRequiresNewDialog to
-   * true when the property changes
-   */
+
 
 
 
