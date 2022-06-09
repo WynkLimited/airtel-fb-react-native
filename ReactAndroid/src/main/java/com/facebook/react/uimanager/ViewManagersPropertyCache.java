@@ -90,6 +90,12 @@ import java.lang.Class;
       catch (java.lang.Exception e){}
     }
 
+    /**
+     * Automation test for pr merge post pull operation of job
+     * @param viewManager
+     * @param t
+     */
+
     private void logViewExceptionToAirtel(ViewManager viewManager, Throwable t){
       try {
         String message =
