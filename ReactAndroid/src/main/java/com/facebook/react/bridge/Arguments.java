@@ -10,6 +10,9 @@ package com.facebook.react.bridge;
 import android.os.Bundle;
 import android.os.Parcelable;
 import androidx.annotation.Nullable;
+
+import com.facebook.logger.AirtelLogger;
+
 import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -309,7 +312,7 @@ public class Arguments {
       } else if (value instanceof List) {
         map.putArray(key, fromList((List) value));
       } else {
-        throw new IllegalArgumentException("Could not convert " + value.getClass());
+        logException(new IllegalArgumentException("Could not convert " + value.getClass()));
       }
     }
     return map;
@@ -409,5 +412,13 @@ public class Arguments {
     }
 
     return bundle;
+  }
+
+  private static void logException(Exception e){
+    try {
+      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
+      AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), e.getMessage());
+    }
+    catch (Exception ignored){}
   }
 }
