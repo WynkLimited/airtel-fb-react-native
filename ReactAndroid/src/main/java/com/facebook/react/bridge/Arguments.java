@@ -71,7 +71,7 @@ public class Arguments {
       } else if (elem instanceof WritableNativeMap) {
         nativeArray.pushMap((WritableNativeMap) elem);
       } else {
-        throw new IllegalArgumentException("Could not convert " + elem.getClass());
+        logException(new IllegalArgumentException("Could not convert " + elem.getClass()));
       }
     }
     return nativeArray;
@@ -116,7 +116,7 @@ public class Arguments {
     } else if (value instanceof WritableNativeMap) {
       nativeMap.putMap(key, (WritableNativeMap) value);
     } else {
-      throw new IllegalArgumentException("Could not convert " + value.getClass());
+      logException(new IllegalArgumentException("Could not convert " + value.getClass()));
     }
   }
 
@@ -183,7 +183,7 @@ public class Arguments {
       } else if (argumentClass == WritableNativeArray.class) {
         arguments.pushArray((WritableNativeArray) argument);
       } else {
-        throw new RuntimeException("Cannot convert argument of type " + argumentClass);
+        logException(new RuntimeException("Cannot convert argument of type " + argumentClass));
       }
     }
     return arguments;
@@ -228,11 +228,11 @@ public class Arguments {
         if (v instanceof Bundle) {
           catalystArray.pushMap(fromBundle((Bundle) v));
         } else {
-          throw new IllegalArgumentException("Unexpected array member type " + v.getClass());
+          logException(new IllegalArgumentException("Unexpected array member type " + v.getClass()));
         }
       }
     } else {
-      throw new IllegalArgumentException("Unknown array type " + array.getClass());
+      logException(new IllegalArgumentException("Unknown array type " + array.getClass()));
     }
     return catalystArray;
   }
@@ -267,7 +267,7 @@ public class Arguments {
       } else if (obj instanceof Boolean) {
         catalystArray.pushBoolean((Boolean) obj);
       } else {
-        throw new IllegalArgumentException("Unknown value type " + obj.getClass());
+        logException(new IllegalArgumentException("Unknown value type " + obj.getClass()));
       }
     }
     return catalystArray;
@@ -360,7 +360,7 @@ public class Arguments {
           list.add(toList(readableArray.getArray(i)));
           break;
         default:
-          throw new IllegalArgumentException("Could not convert object in array.");
+          logException(new IllegalArgumentException("Could not convert object in array."));
       }
     }
 
@@ -407,7 +407,7 @@ public class Arguments {
           bundle.putSerializable(key, toList(readableMap.getArray(key)));
           break;
         default:
-          throw new IllegalArgumentException("Could not convert object with key: " + key + ".");
+          logException(new IllegalArgumentException("Could not convert object with key: " + key + "."));
       }
     }
 
