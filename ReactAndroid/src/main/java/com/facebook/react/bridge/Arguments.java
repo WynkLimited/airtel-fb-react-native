@@ -416,7 +416,8 @@ public class Arguments {
 
   private static void logException(Exception e){
     try {
-      AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
+      //temporarily stopping error logs due to bugsnag event sampling
+      //AirtelLogger.getInstance().getLogException().invoke(AirtelLogger.getInstance().getErrorLoggerInstance(), e);
       AirtelLogger.getInstance().getLogBreadCrumb().invoke(AirtelLogger.getInstance().getBreadcrumbLoggerInstance(), e.getMessage());
     }
     catch (Exception ignored){}
